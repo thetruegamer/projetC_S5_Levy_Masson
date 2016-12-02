@@ -8,7 +8,7 @@
 #include "header.h"
 
 char *formatageNb(message msg){
-	if(strlen(msg.longueurTotale)) > 4){
+	if(strlen(msg.longueurTotale) > 4){
 		perror("Message trop long");
 		exit(1);
 	}
