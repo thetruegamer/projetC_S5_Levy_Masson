@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall
+CFLAGS=-Wall -Wextra -Werror
 EXEC=tchatche tchatche_serveur
 LDFLAGS=-pthread
 
