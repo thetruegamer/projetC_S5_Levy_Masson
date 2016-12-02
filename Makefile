@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -Werror
-EXEC=tchatche tchatche_serveur
+EXEC=tchatche tchatche_serveur formatage
 LDFLAGS=-pthread
 
 all: $(EXEC) header.h
@@ -9,6 +9,9 @@ tchatche_serveur: tchatche_serveur.o
 	$(CC) -o $@ $^
 
 tchatche: tchatche.o
+	$(CC) -o $@ $^
+
+formatage: formatage.o
 	$(CC) -o $@ $^
 
 %.o: %.c
