@@ -7,14 +7,14 @@
 
 #include "header.h"
 
-char *formatageNb(message msg){
+/*char *formatageNb(message msg){
 	if(strlen(msg.longueurTotale) > 4){
 		perror("Message trop long");
 		exit(1);
 	}
 	printf("longeur : %d\n", strlen(msg.longueurTotale));
 	return "";
-}
+}*/
 
 
 int main(int argc, char **argv)
@@ -30,7 +30,7 @@ int main(int argc, char **argv)
 	}
 
 	printf("Bienvenue dans le MALE tchat !\n");
-	printf("Pseudo ? >\n");
+	printf("Pseudo ? > ");
 	fgets(msg.msg, MAX_BUF, stdin);
 	//TO DO FORMATER LA CHAINE POUR RENVOYER LE PSEUDO
 	if((write(fd, msg.msg, strlen(msg.msg)) == -1)){
@@ -39,17 +39,20 @@ int main(int argc, char **argv)
 	}
 
 	while(1){
-		printf("#> \n");
-		if(strcmp((fgets(msg.msg, MAX_BUF, stdin)), "quit\n") != 0){
+		printf("#> ");
+		fgets(msg.msg, MAX_BUF, stdin);
+		if(strcmp(msg.msg, "\n") != 0){
+			if(strcmp(msg.msg, "quit\n") == 0){
+				if((write(fd, msg.msg, strlen(msg.msg)) == -1)){
+					perror("write");
+					exit(1);
+				}
+				exit(1);
+			}
 			if((write(fd, msg.msg, strlen(msg.msg)) == -1)){
 				perror("write");
 				exit(1);
 			}
-			exit(1);
-		}
-		if((write(fd, msg.msg, strlen(msg.msg)) == -1)){
-			perror("write");
-			exit(1);
 		}
 	}
 
