@@ -7,15 +7,23 @@
 #include <pthread.h>
 #include <string.h>
 
+//S est le tube maitre, tous les clients envoient par ce tube, et le serveur ne fait que lire dessus
 #define S "/tmp/S"
 #define MAX_BUF 4096
 
 typedef struct {
 	int longueurTotale;
-	char type[4];
+	char *type;
 	int id;
 	char *pseudo;
-	char *tube;
+	int tube;
 	int lMsg;
 	char *msg;
 } message;
+
+
+char *formatageNb(int nombre);
+char *getStringLength(char *string);
+int getTotalLength(message msg);
+message initialiseMessage();
+void afficheInfosStruct(message msg);
