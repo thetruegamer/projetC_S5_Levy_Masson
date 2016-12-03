@@ -27,3 +27,4 @@ char *getStringLength(char *string);
 int getTotalLength(message msg);
 message initialiseMessage();
 void afficheInfosStruct(message msg);
+char *writeHELOmsg(message msg);

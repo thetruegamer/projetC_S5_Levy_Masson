@@ -7,22 +7,14 @@
 
 #include "header.h"
 
-/*char *formatageNb(message msg){
-	if(strlen(msg.longueurTotale) > 4){
-		perror("Message trop long");
-		exit(1);
-	}
-	printf("longeur : %d\n", strlen(msg.longueurTotale));
-	return "";
-}*/
-
-
-int main(int argc, char **argv)
+int main()
 {
 	int fd;
-	char *myfifo = "/tmp/S";
+	int pid;
+	char *myfifo = S;
 	message msg;
-	msg.msg = malloc(MAX_BUF*sizeof(char));
+	msg = initialiseMessage();
+	char *chaineFinale = malloc(MAX_BUF*sizeof(char));
 
 	if((fd = open(myfifo, O_WRONLY)) == -1){
 		perror("open");
@@ -31,9 +23,15 @@ int main(int argc, char **argv)
 
 	printf("Bienvenue dans le MALE tchat !\n");
 	printf("Pseudo ? > ");
-	fgets(msg.msg, MAX_BUF, stdin);
-	//TO DO FORMATER LA CHAINE POUR RENVOYER LE PSEUDO
-	if((write(fd, msg.msg, strlen(msg.msg)) == -1)){
+
+	//On va remplir la struct msg pour l'envoi du pseudo
+	fgets(msg.pseudo, MAX_BUF, stdin);
+	strtok(msg.pseudo, "\n");
+	msg.type = "HELO";
+	pid = getpid();
+	msg.tube = pid;
+	chaineFinale = writeHELOmsg(msg);
+	if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
 		perror("write");
 		exit(1);
 	}
@@ -41,7 +39,9 @@ int main(int argc, char **argv)
 	while(1){
 		printf("#> ");
 		fgets(msg.msg, MAX_BUF, stdin);
-		if(strcmp(msg.msg, "\n") != 0){
+		if(strcmp(msg.msg, "\n") != 0)
+		{
+			// si c'est le message quit on quitte
 			if(strcmp(msg.msg, "quit\n") == 0){
 				if((write(fd, msg.msg, strlen(msg.msg)) == -1)){
 					perror("write");
@@ -49,6 +49,7 @@ int main(int argc, char **argv)
 				}
 				exit(1);
 			}
+			// on écrit dans le tube
 			if((write(fd, msg.msg, strlen(msg.msg)) == -1)){
 				perror("write");
 				exit(1);

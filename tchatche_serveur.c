@@ -7,7 +7,7 @@
 
 #include "header.h"
 
-int main(int argc, char **argv)
+int main()
 {
 	int fd;
 	char *buf = malloc(MAX_BUF*sizeof(char));
@@ -30,6 +30,7 @@ int main(int argc, char **argv)
 			exit(1);
 		}
 		printf("%s", buf);
+		//Après lecture d'un message, remet le buffer à 0
 		memset(buf, 0, MAX_BUF);
 		fflush(stdout);
 	}

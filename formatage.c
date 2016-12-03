@@ -12,14 +12,12 @@ char *formatageNb(int nombre){
 			pivot /= 10;
 			longueur++;
 		}
-	
 
 		zero = malloc((4-longueur)*sizeof(char));
 
 		if(longueur == 0)
 			longueur = 1;
 
-		printf("l : %d, nombre : %d\n", longueur, nombre);
 		if(longueur > 4){
 			printf("Nombre trop grand !\n");
 			exit(1);
@@ -42,6 +40,7 @@ char *formatageNb(int nombre){
 	return zero;
 }
 
+//Renvoie la longueur d'une chaine formatée sur 4 octets
 char *getStringLength(char *string){
 	int l = strlen(string);
 	char *result = formatageNb(l);
@@ -51,12 +50,21 @@ char *getStringLength(char *string){
 //Renvoie la longueur totale des infos de la struct
 int getTotalLength(message msg){
 	int l = 0;
-	int lId = strlen(formatageNb(msg.id));
+	int lId = 0;
+	if(msg.id != 0){
+		lId = strlen(formatageNb(msg.id));
+	}
 	int lTube = strlen(formatageNb(msg.tube));
 	int lLMsg = strlen(formatageNb(msg.lMsg));
 	int lMsg = strlen(msg.msg);
+	int lPseudo = 0;
+	int lLpseudo = 0;
+	if(strcmp(msg.pseudo, "") != 0){
+		lPseudo = strlen(msg.pseudo);
+		lLpseudo = 4;
+	}
 	//longueurTotale + type + id de client + numero du tube + longueur du message + message
-	l = 4 + 4 + lId + lTube + lLMsg + lMsg;
+	l = 4 + 4 + lId + lTube + lLMsg + lMsg + lPseudo + lLpseudo;
 	//Faire attention pour le pseudo ???
 	msg.longueurTotale = l;
 
@@ -69,10 +77,10 @@ message initialiseMessage(){
 	msg.longueurTotale = 0;
 	msg.type = "0000";
 	msg.id = 0;
-	msg.pseudo = "";
+	msg.pseudo = malloc(MAX_BUF*sizeof(char));
 	msg.tube = 0;
 	msg.lMsg = 0;
-	msg.msg = "";
+	msg.msg = malloc(MAX_BUF*sizeof(char));
 
 	return msg;
 }
@@ -88,24 +96,41 @@ void afficheInfosStruct(message msg){
 	printf("msg :              %s\n", msg.msg);
 }
 
-int main()
-{
-	//char *test = malloc(4*sizeof(char));
-	
-	// TEST FORMATAGE NOMBRE
-	// test = formatageNb(690);
-	// printf("test : %s\n", test);
+// Concatène les infos de la structure pour fabriquer un HELO
+char *writeHELOmsg(message msg){
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
 
-	//TEST GET STRING LENGTH
-	// test = "test";
-	// test = getStringLength(test);
-	// printf("test : %s\n", test);
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+	strcat(resultat, getStringLength(msg.pseudo));
+	strcat(resultat, msg.pseudo);
+	strcat(resultat, getStringLength(formatageNb(msg.tube)));
+	strcat(resultat, formatageNb(msg.tube));
 
-	//TEST CREATION / INITIALISATION STRUCT
-	message msg;
-	msg = initialiseMessage();
-	msg.longueurTotale = getTotalLength(msg);
-	afficheInfosStruct(msg);
-
-	return 0;
+	return resultat;
 }
+
+// int main()
+// {
+// 	//char *test = malloc(4*sizeof(char));
+	
+// 	// TEST FORMATAGE NOMBRE
+// 	// test = formatageNb(690);
+// 	// printf("test : %s\n", test);
+
+// 	//TEST GET STRING LENGTH
+// 	// test = "test";
+// 	// test = getStringLength(test);
+// 	// printf("test : %s\n", test);
+
+// 	//TEST CREATION / INITIALISATION STRUCT
+// 	message msg;
+// 	msg = initialiseMessage();
+// 	msg.pseudo = "picsouze";
+// 	msg.longueurTotale = getTotalLength(msg);
+// 	afficheInfosStruct(msg);
+// 	char *helo = writeHELOmsg(msg);
+// 	printf("%s\n", helo);
+
+// 	return 0;
+// }
