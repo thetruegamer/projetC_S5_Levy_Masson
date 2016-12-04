@@ -28,7 +28,7 @@ int main()
 	fgets(msg.pseudo, MAX_BUF, stdin);
 	strtok(msg.pseudo, "\n");
 	msg.type = "HELO";
-	pid = getpid();
+	pid = getPID();
 	msg.tube = pid;
 	chaineFinale = writeHELOmsg(msg);
 	if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){

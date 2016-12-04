@@ -56,7 +56,6 @@ char *formatageNb(int nombre){
 		exit(1);
 	}
 
-
 	return zero;
 }
 
@@ -137,12 +136,52 @@ char *writeOKOKmsg(message msg)
 
 	strcat(resultat, formatageNb(getTotalLength(msg)));
 	strcat(resultat, msg.type);
-	strcat(resultat, msg.id);
+	strcat(resultat, formatageNb(msg.id));
 
 	return resultat;
 }
 
+void deformatage(char* s){
+	char *debut = &s[4];
+	char *fin = &s[8];
 
+	char *substr = calloc(1, fin - debut + 1);
+	memcpy(substr, debut, fin - debut);
+	
+	if(strcmp(substr, "HELO") == 0)
+		;
+		//TO DO
+	else if(strcmp(substr, "OKOK") == 0)
+		;
+		//TO DO
+	else if(strcmp(substr, "BYEE") == 0)
+		;
+		//TO DO
+	else if(strcmp(substr, "BCST") == 0)
+		;
+		//TO DO
+	else if(strcmp(substr, "PRVT") == 0)
+		;
+		//TO DO
+	else if(strcmp(substr, "LIST") == 0)
+		;
+		//TO DO
+	else if(strcmp(substr, "SHUT") == 0)
+		;
+		//TO DO
+	else if(strcmp(substr, "DEBG") == 0)
+		;
+		//TO DO?
+	else if(strcmp(substr, "FILE") == 0)
+		;
+		//TO DO
+	else {
+		//Cette erreur n'est jamais sensée arriver
+		printf("Erreur de type !\n");
+		exit(1);
+	}
+
+}
 
 // int main()
 // {
@@ -161,10 +200,15 @@ char *writeOKOKmsg(message msg)
 // 	message msg;
 // 	msg = initialiseMessage();
 // 	msg.pseudo = "picsouze";
+// 	msg.type = "HELO";
 // 	msg.longueurTotale = getTotalLength(msg);
 // 	afficheInfosStruct(msg);
 // 	char *helo = writeHELOmsg(msg);
+// 	msg.type = "okok";
+// 	char *okok = writeOKOKmsg(msg);
 // 	printf("%s\n", helo);
+// 	printf("%s\n", okok);
+// 	deformatage(helo);
 
 // 	return 0;
 // }
