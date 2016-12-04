@@ -24,8 +24,10 @@ int main()
 		exit(1);
 	}
 
-	while(1){
-		if((read(fd, buf, MAX_BUF)) == -1){
+	while(1)
+	{
+		if((read(fd, buf, MAX_BUF)) == -1)
+		{
 			perror("read");
 			exit(1);
 		}
