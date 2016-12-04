@@ -21,6 +21,12 @@ typedef struct {
 	char *msg;
 } message;
 
+typedef struct 
+{
+	char *pseudo;
+	char *nomTube;
+	int id;
+} utilisateur;
 
 char *formatageNb(int nombre);
 char *getStringLength(char *string);
@@ -28,3 +34,4 @@ int getTotalLength(message msg);
 message initialiseMessage();
 void afficheInfosStruct(message msg);
 char *writeHELOmsg(message msg);
+int getPID();

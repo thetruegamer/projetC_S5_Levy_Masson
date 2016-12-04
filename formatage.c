@@ -15,6 +15,8 @@ int getPID(){
 		sprintf(pidString, "%d", pid);
 		strncpy(pidStringFinale, pidString, 4);
 	}
+
+	return strtol(pidStringFinale,NULL,10);
 }
 
 //Convertit un nombre en chaine de 4 chars et complete par des zeros devant si besoin
@@ -41,7 +43,8 @@ char *formatageNb(int nombre){
 		} else if(longueur == 4){
 			sprintf(zero, "%d", nombre);
 		} else {
-			for(int i = 0; i < 4-longueur; i++)
+			int i;
+			for(i = 0; i < 4-longueur; i++)
 				strcat(zero,"0");
 			sprintf(resultat, "%d", nombre);
 			strcat(zero, resultat);
@@ -114,7 +117,8 @@ void afficheInfosStruct(message msg){
 }
 
 // Concatène les infos de la structure pour fabriquer un HELO
-char *writeHELOmsg(message msg){
+char *writeHELOmsg(message msg)
+{
 	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
 
 	strcat(resultat, formatageNb(getTotalLength(msg)));
@@ -126,6 +130,19 @@ char *writeHELOmsg(message msg){
 
 	return resultat;
 }
+
+char *writeOKOKmsg(message msg)
+{
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
+
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+	strcat(resultat, msg.id);
+
+	return resultat;
+}
+
+
 
 // int main()
 // {
