@@ -1,7 +1,7 @@
 /**
  * Nom : tchatche.c
  * Auteurs : Bastien MASSON / Corentin LEVY
- * Dernière modification : 1/12/16
+ * Dernière modification : 4/12/16
  * Description : Ce fichier est un client, il envoie des messages au serveur et affiche pour l'utilisateur
  */
 

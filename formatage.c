@@ -1,5 +1,22 @@
 #include "header.h"
 
+int getPID(){
+	int pid = getpid();
+	int longueur = 0;
+	char *pidString = malloc(10*sizeof(char*));
+	char *pidStringFinale = malloc(10*sizeof(char*));
+	int pivot = pid;
+
+	while(pivot){
+		pivot /= 10;
+		longueur++;
+	}
+	if(longueur > 4){
+		sprintf(pidString, "%d", pid);
+		strncpy(pidStringFinale, pidString, 4);
+	}
+}
+
 //Convertit un nombre en chaine de 4 chars et complete par des zeros devant si besoin
 char *formatageNb(int nombre){
 	int longueur = 0;
