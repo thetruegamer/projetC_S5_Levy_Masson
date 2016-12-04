@@ -35,3 +35,5 @@ message initialiseMessage();
 void afficheInfosStruct(message msg);
 char *writeHELOmsg(message msg);
 int getPID();
+char *writeOKOKmsg(message msg);
+void deformatage(char* s);
