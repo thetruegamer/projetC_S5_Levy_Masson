@@ -6,19 +6,19 @@ LDFLAGS=-pthread
 all: $(EXEC) header.h
 
 tchatche_serveur: tchatche_serveur.o formatage.c
-	$(CC) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^
 
 tchatche: tchatche.o formatage.c
-	$(CC) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^
 
 formatage: formatage.o
-	$(CC) -o $@ $^
+	$(CC) $(LDFLAGS) -o $@ $^
 
 %.o: %.c
-	$(CC) -o $@ -c $< $(CFLAGS)
+	$(CC) $(LDFLAGS) -o $@ -c $< $(CFLAGS)
 
 clean:
 	rm -rf *.o
 
 mrproper: clean
-	rm -rf $(EXEC)$(CC) -o $@ $^
+	rm -rf $(EXEC) $(CC) -o $@ $^
