@@ -54,7 +54,8 @@ int main()
 	utilisateur usr;
 	msg = initialiseMessage();
 
-	if((fd = open(myfifo, O_WRONLY)) == -1){
+	if((fd = open(myfifo, O_WRONLY)) == -1)
+	{
 		perror("open");
 		exit(1);
 	}
@@ -65,12 +66,15 @@ int main()
 	//On va remplir la struct msg pour l'envoi du pseudo
 	fgets(msg.pseudo, MAX_BUF, stdin);
 	strtok(msg.pseudo, "\n");
+
 	pid = getPPID();
+	msg.type = "HELO";
 	msg.tube = pid;
 
 	//On rédige un message de type HELO
 	chaineFinale = writeHELOmsg(msg);
-	if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
+	if((write(fd, chaineFinale, strlen(chaineFinale)) == -1))
+	{
 		perror("write");
 		exit(1);
 	}
