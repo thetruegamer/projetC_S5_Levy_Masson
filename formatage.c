@@ -313,7 +313,7 @@ void bcst(char *s){
 		}
 		i++;
 	}
-	
+
 	char *pseudo = PSEUDOS[positionPseudo];
 
 	strcat(msgReady, pseudo);
