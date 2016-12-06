@@ -7,6 +7,8 @@
 #include <pthread.h>
 #include <string.h>
 
+//commentaire inutile
+
 //S est le tube maitre, tous les clients envoient par ce tube, et le serveur ne fait que lire dessus
 #define S "/tmp/S"
 #define MAX_BUF 4096
