@@ -24,16 +24,37 @@ typedef struct {
 typedef struct 
 {
 	char *pseudo;
-	char *nomTube;
+	char *tube;
 	int id;
 } utilisateur;
+
+int getPPID();
 
 char *formatageNb(int nombre);
 char *getStringLength(char *string);
 int getTotalLength(message msg);
+
 message initialiseMessage();
+utilisateur initialiseUser(message msg);
+
 void afficheInfosStruct(message msg);
+
 char *writeHELOmsg(message msg);
-int getPID();
 char *writeOKOKmsg(message msg);
-void deformatage(char* s);
+char *writeBCSTmsgClient(message msg);
+char *writeBCSTmsgServeur(message msg);
+
+void deformatage(char* s, int opt);
+
+void helo(char *s);
+void heloServeur(char *s);
+
+void okok(char *s);
+void okokClient(char *s);
+
+void bcst(char *s);
+void bcstClient(char *s);
+
+char *extractId(char *s);
+char *extractPseudo(char *s);
+char *extractType(char *s);

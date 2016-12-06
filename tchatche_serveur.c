@@ -7,6 +7,9 @@
 
 #include "header.h"
 
+extern int IDSCLIENTS[];
+extern int INDICECREATION;
+
 int main()
 {
 	int fd;
@@ -29,7 +32,9 @@ int main()
 			perror("read");
 			exit(1);
 		}
-		printf("%s", buf);
+		printf("%s\n", buf);
+		deformatage(buf, 0);
+		deformatage(buf, 1);
 		//Après lecture d'un message, remet le buffer à 0
 		memset(buf, 0, MAX_BUF);
 		fflush(stdout);
