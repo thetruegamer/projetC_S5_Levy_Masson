@@ -313,7 +313,7 @@ void bcst(char *s){
 		}
 		i++;
 	}
-	printf("%s\n", PSEUDOS[0]);
+	
 	char *pseudo = PSEUDOS[positionPseudo];
 
 	strcat(msgReady, pseudo);
