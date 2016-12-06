@@ -8,6 +8,7 @@
 #include "header.h"
 
 extern int IDSCLIENTS[];
+extern char *PSEUDOS[];
 extern int INDICECREATION;
 
 int main()
@@ -34,7 +35,7 @@ int main()
 		}
 		printf("%s\n", buf);
 		deformatage(buf, 0);
-		deformatage(buf, 1);
+		//deformatage(buf, 1);
 		//Après lecture d'un message, remet le buffer à 0
 		memset(buf, 0, MAX_BUF);
 		fflush(stdout);

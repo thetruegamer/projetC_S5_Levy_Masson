@@ -1,6 +1,7 @@
 #include "header.h"
 
 int IDSCLIENTS[1024];
+char *PSEUDOS[1024];
 int INDICECREATION = 0;
 
 int getPPID(){
@@ -14,11 +15,10 @@ int getPPID(){
 		pivot /= 10;
 		longueur++;
 	}
-	if(longueur > 4){
-		sprintf(pidString, "%d", pid);
-		strncpy(pidStringFinale, pidString, 4);
-	}
-
+	
+	sprintf(pidString, "%d", pid);
+	strncpy(pidStringFinale, pidString, 4);
+	
 	return strtol(pidStringFinale,NULL,10);
 }
 
@@ -227,11 +227,6 @@ void deformatage(char* s, int opt){
 	else if(strcmp(substr, "BADD") == 0)
 		;
 		//TO DO
-	else {
-		//Cette erreur n'est jamais sensée arriver
-		printf("Erreur de type !\n");
-		exit(1);
-	}
 }
 
 void helo(char *s){
@@ -251,19 +246,23 @@ void helo(char *s){
 			perror("mkfifoHELO");
 			exit(1);
 		}
-		IDSCLIENTS[INDICECREATION] = atoi(substr);
-		INDICECREATION++;
 	}
+
+	IDSCLIENTS[INDICECREATION] = atoi(substr);
 
 	if((fd = open(substr, O_WRONLY)) == -1){
 		perror("openHELO");
 		exit(1);
 	}
 
+	//pseudo
 	char *debut = &s[12];
 	char *fin = &s[strlen(s) - 8];
 	substr = calloc(1, fin - debut + 1);
 	memcpy(substr, debut, fin - debut);
+
+	PSEUDOS[INDICECREATION] = substr;
+	INDICECREATION++;
 
 	msg.pseudo = substr;
 	okokString = writeOKOKmsg(msg);
@@ -296,8 +295,51 @@ void okokClient(char *s) {
 }
 
 void bcst(char *s){
+	int fd;
+	char *msgReady = malloc(MAX_BUF*sizeof(char));
+	char *currentClient = malloc(4*sizeof(char));
 	char *id = extractId(s);
-	int i = 0;
+	int i = 0, positionPseudo = 0;
+	//On récupère le message
+	char *debut = &s[16];
+	char *fin = &s[strlen(s)];
+	char *substr = calloc(1, fin - debut + 1);
+	memcpy(substr, debut, fin - debut);
+
+	//On récupère le pseudo de l'envoyeur
+	while(i <= INDICECREATION){
+		if(strcmp(id, formatageNb(IDSCLIENTS[i])) == 0){
+			positionPseudo = i;
+		}
+		i++;
+	}
+	printf("%s\n", PSEUDOS[0]);
+	char *pseudo = PSEUDOS[positionPseudo];
+
+	strcat(msgReady, pseudo);
+	strcat(msgReady, " : ");
+	strcat(msgReady, substr);
+
+	i = 0;
+	while(i < INDICECREATION){
+		currentClient = formatageNb(IDSCLIENTS[i]);
+		
+
+		if(strcmp(currentClient, id) != 0){
+			if((fd = open(currentClient, O_WRONLY)) == -1){
+				perror("openBCST");
+				exit(1);
+			}
+	
+			if((write(fd, msgReady, MAX_BUF)) == -1){
+				perror("writeBCST");
+				exit(1);
+			}
+		}
+		close(fd);
+		i++;
+	}
+	//Extraire message, redistribuer message
 }
 
 void bcstClient(char *s){
@@ -319,10 +361,17 @@ char *extractPseudo(char *s){
 
 char *extractId(char *s){
 	char *substr = malloc(MAX_BUF*sizeof(char));
+	char *debut;
+	char *fin;
 
 	if((strcmp(extractType(s), "OKOK") == 0) || (strcmp(extractType(s), "HELO") == 0)){
-		char *debut = &s[strlen(s) - 4];
-		char *fin = &s[strlen(s)];
+		debut = &s[strlen(s) - 4];
+		fin = &s[strlen(s)];
+		substr = calloc(1, fin - debut + 1);
+		memcpy(substr, debut, fin - debut);
+	} else if(strcmp(extractType(s), "BCST") == 0){
+		debut = &s[8];
+		fin = &s[12];
 		substr = calloc(1, fin - debut + 1);
 		memcpy(substr, debut, fin - debut);
 	}
@@ -337,6 +386,7 @@ char *extractType(char *s){
 
 	return substr;
 }
+
 // int main()
 // {
 // 	//char *test = malloc(4*sizeof(char));

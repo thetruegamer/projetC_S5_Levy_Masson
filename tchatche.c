@@ -8,6 +8,7 @@
 #include "header.h"
 
 extern int IDSCLIENTS[];
+extern char *PSEUDOS[];
 extern int INDICECREATION;
 
 void *thread1(){
@@ -32,7 +33,7 @@ void *thread1(){
 		}
 		if(strcmp(buf, "") != 0)
 			deformatage(buf, 1);
-			printf("#> [SERVEUR] %s\n#> ", buf);
+			printf("%s\n#> ", buf);
 		memset(buf, 0, MAX_BUF);
 		fflush(stdout);
 	}
