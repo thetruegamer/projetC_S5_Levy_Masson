@@ -296,10 +296,12 @@ void okokClient(char *s) {
 
 void bcst(char *s){
 	int fd;
+	message msg = initialiseMessage();
 	char *msgReady = malloc(MAX_BUF*sizeof(char));
 	char *currentClient = malloc(4*sizeof(char));
 	char *id = extractId(s);
 	int i = 0, positionPseudo = 0;
+
 	//On récupère le message
 	char *debut = &s[16];
 	char *fin = &s[strlen(s)];
@@ -315,10 +317,10 @@ void bcst(char *s){
 	}
 
 	char *pseudo = PSEUDOS[positionPseudo];
-
-	strcat(msgReady, pseudo);
-	strcat(msgReady, " : ");
-	strcat(msgReady, substr);
+	//On formate le message a envoyer aux clients
+	msg.msg = substr;
+	msg.pseudo = pseudo;
+	msgReady = writeBCSTmsgServeur(msg);
 
 	i = 0;
 	while(i < INDICECREATION){
@@ -343,7 +345,25 @@ void bcst(char *s){
 }
 
 void bcstClient(char *s){
+	char *debut = &s[8];
+	char *fin = &s[12];
+	char *indice = calloc(1, fin - debut + 1);
+	memcpy(indice, debut, fin - debut);
+	int i = atoi(indice);
 
+	//récupère le message
+	debut = &s[16 + i];
+	fin = &s[strlen(s)];
+	char *substr = calloc(1, fin - debut + 1);
+	memcpy(substr, debut, fin - debut);
+
+	//récupère le pseudo
+	debut = &s[12];
+	fin = &s[12 + i];
+	char *pseudo = calloc(1, fin - debut + 1);
+	memcpy(pseudo, debut, fin - debut);
+
+	printf("%s >> %s\n", pseudo, substr);
 }
 
 /////////////////////////////////////

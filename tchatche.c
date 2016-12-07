@@ -33,7 +33,7 @@ void *thread1(){
 		}
 		if(strcmp(buf, "") != 0)
 			deformatage(buf, 1);
-			printf("%s\n#> ", buf);
+			//printf("%s\n", buf);
 		memset(buf, 0, MAX_BUF);
 		fflush(stdout);
 	}
@@ -93,7 +93,6 @@ int main()
 
 	while(1){
 		
-		printf("#> ");
 		fgets(msg.msg, MAX_BUF, stdin);
 		if(strcmp(msg.msg, "\n") != 0)
 		{
