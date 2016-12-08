@@ -109,15 +109,6 @@ message initialiseMessage(){
 	return msg;
 }
 
-utilisateur initialiseUser(message msg){
-	utilisateur usr;
-	usr.pseudo = msg.pseudo;
-	usr.id = msg.id;
-	usr.tube = formatageNb(msg.tube);
-
-	return usr;
-}
-
 //Affiche les infos d'une struct
 void afficheInfosStruct(message msg){
 	printf("longueur Totale :  %d\n", msg.longueurTotale);
@@ -180,6 +171,16 @@ char *writeBCSTmsgServeur(message msg){
 	return resultat;
 }
 
+char *writeBYEEmsg(message msg){
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
+	msg.type = "BYEE";
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+	strcat(resultat, formatageNb(msg.id));
+
+	return resultat;
+}
+
 /************************
  *	DEBUT PARTIE    *
  * 			*
@@ -202,8 +203,10 @@ void deformatage(char* s, int opt){
 		else
 			okokClient(s);
 	else if(strcmp(substr, "BYEE") == 0)
-		;
-		//TO DO
+		if(opt == 0)
+			byee(s);
+		else
+			byeeClient(s);
 	else if(strcmp(substr, "BCST") == 0)
 		if(opt == 0)
 			bcst(s);
@@ -309,7 +312,7 @@ void bcst(char *s){
 	memcpy(substr, debut, fin - debut);
 
 	//On récupère le pseudo de l'envoyeur
-	while(i <= INDICECREATION){
+	while(i < INDICECREATION){
 		if(strcmp(id, formatageNb(IDSCLIENTS[i])) == 0){
 			positionPseudo = i;
 		}
@@ -326,7 +329,6 @@ void bcst(char *s){
 	while(i < INDICECREATION){
 		currentClient = formatageNb(IDSCLIENTS[i]);
 		
-
 		if(strcmp(currentClient, id) != 0){
 			if((fd = open(currentClient, O_WRONLY)) == -1){
 				perror("openBCST");
@@ -345,6 +347,7 @@ void bcst(char *s){
 }
 
 void bcstClient(char *s){
+	//récupère l'indice
 	char *debut = &s[8];
 	char *fin = &s[12];
 	char *indice = calloc(1, fin - debut + 1);
@@ -363,7 +366,50 @@ void bcstClient(char *s){
 	char *pseudo = calloc(1, fin - debut + 1);
 	memcpy(pseudo, debut, fin - debut);
 
-	printf("%s >> %s\n", pseudo, substr);
+	printf("[%s] %s\n", pseudo, substr);
+}
+
+void byee(char *s){
+	char *id = extractId(s);
+	int i = 0, fd, positionPseudo = 0;
+	char *currentClient = malloc(4*sizeof(char));
+	int idsTemp[1024];
+	char *pseudosTemp[1024];
+	memcpy(idsTemp, IDSCLIENTS, 1024*sizeof(int));
+	memcpy(pseudosTemp, PSEUDOS, 1024*sizeof(char));
+
+	while(i <= INDICECREATION){
+		if(strcmp(id, formatageNb(IDSCLIENTS[i])) == 0){
+			positionPseudo = i;
+			currentClient = formatageNb(IDSCLIENTS[i]);
+		} else {
+			idsTemp[i] = IDSCLIENTS[i];
+			pseudosTemp[i] = PSEUDOS[i];
+		}
+		i++;
+	}
+
+	if((fd = open(currentClient, O_WRONLY)) == -1){
+		perror("openBYEE");
+		exit(1);
+	}
+
+	if((write(fd, s, MAX_BUF)) == -1){
+		perror("writeBYEE");
+		exit(1);
+	}
+
+	INDICECREATION--;
+	memcpy(IDSCLIENTS, idsTemp, 1024*sizeof(int));
+	memcpy(PSEUDOS, pseudosTemp, 1024*sizeof(char));
+
+	close(fd);
+}
+
+void byeeClient(char *s){
+	char *id = extractId(s);
+	printf("[SERVEUR] You are now disconnected. Your ID was : %s\n", id);
+	//exit(0);
 }
 
 /////////////////////////////////////
@@ -389,7 +435,7 @@ char *extractId(char *s){
 		fin = &s[strlen(s)];
 		substr = calloc(1, fin - debut + 1);
 		memcpy(substr, debut, fin - debut);
-	} else if(strcmp(extractType(s), "BCST") == 0){
+	} else if((strcmp(extractType(s), "BCST") == 0) || (strcmp(extractType(s), "BYEE") == 0)){
 		debut = &s[8];
 		fin = &s[12];
 		substr = calloc(1, fin - debut + 1);

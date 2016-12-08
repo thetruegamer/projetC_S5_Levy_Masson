@@ -21,13 +21,6 @@ typedef struct {
 	char *msg;
 } message;
 
-typedef struct 
-{
-	char *pseudo;
-	char *tube;
-	int id;
-} utilisateur;
-
 int getPPID();
 
 char *formatageNb(int nombre);
@@ -35,7 +28,6 @@ char *getStringLength(char *string);
 int getTotalLength(message msg);
 
 message initialiseMessage();
-utilisateur initialiseUser(message msg);
 
 void afficheInfosStruct(message msg);
 
@@ -43,6 +35,7 @@ char *writeHELOmsg(message msg);
 char *writeOKOKmsg(message msg);
 char *writeBCSTmsgClient(message msg);
 char *writeBCSTmsgServeur(message msg);
+char *writeBYEEmsg(message msg);
 
 void deformatage(char* s, int opt);
 
@@ -54,6 +47,9 @@ void okokClient(char *s);
 
 void bcst(char *s);
 void bcstClient(char *s);
+
+void byee(char *s);
+void byeeClient(char *s);
 
 char *extractId(char *s);
 char *extractPseudo(char *s);

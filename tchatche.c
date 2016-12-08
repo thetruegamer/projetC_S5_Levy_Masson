@@ -33,6 +33,7 @@ void *thread1(){
 		}
 		if(strcmp(buf, "") != 0)
 			deformatage(buf, 1);
+			//affiche les chaines formatées qui viennent du serveur, utile pour débug
 			//printf("%s\n", buf);
 		memset(buf, 0, MAX_BUF);
 		fflush(stdout);
@@ -51,7 +52,6 @@ int main()
 	char *myfifo = S;
 	char *chaineFinale = malloc(MAX_BUF*sizeof(char));
 	message msg;
-	utilisateur usr;
 	msg = initialiseMessage();
 
 	if((fd = open(myfifo, O_WRONLY)) == -1)
@@ -70,6 +70,7 @@ int main()
 	pid = getPPID();
 	msg.type = "HELO";
 	msg.tube = pid;
+	msg.id = pid;
 
 	//On rédige un message de type HELO
 	chaineFinale = writeHELOmsg(msg);
@@ -84,40 +85,36 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	usr = initialiseUser(msg);
-	usr.pseudo = msg.pseudo;
-	usr.id = msg.tube;
-	usr.tube = formatageNb(msg.id);
-	usr.id++;
-	usr.id--;
-
 	while(1){
 		
 		fgets(msg.msg, MAX_BUF, stdin);
 		if(strcmp(msg.msg, "\n") != 0)
 		{
 			// si c'est le message quit on quitte
-			if(strcmp(msg.msg, "quit\n") == 0){
-				
+			if(strcmp(msg.msg, "/quit\n") == 0){
+				chaineFinale = writeBYEEmsg(msg);
 				if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
 					perror("write");
 					exit(1);
 				}
-				close(fd);
-				unlink(myfifo);
-				exit(1);
-			}
-			strtok(msg.msg, "\n");
-			msg.tube = pid;
-			msg.id = pid;
-			chaineFinale = writeBCSTmsgClient(msg);
-			// on écrit dans le tube
-			if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
-				perror("write");
-				exit(1);
+				sleep(0.5);
+				break;
+				
+			} else {
+				strtok(msg.msg, "\n");
+				msg.tube = pid;
+				msg.id = pid;
+				chaineFinale = writeBCSTmsgClient(msg);
+				// on écrit dans le tube
+				if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
+					perror("write");
+					exit(1);
+				}
 			}
 		}
 	}
 
+	pthread_cancel(t1);
+	
 	return 0;
 }
