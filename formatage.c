@@ -105,6 +105,7 @@ message initialiseMessage(){
 	msg.tube = 0;
 	msg.lMsg = 0;
 	msg.msg = malloc(MAX_BUF*sizeof(char));
+	msg.nombre = 0;
 
 	return msg;
 }
@@ -181,6 +182,28 @@ char *writeBYEEmsg(message msg){
 	return resultat;
 }
 
+char *writeLISTmsgClient(message msg){
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
+	msg.type = "LIST";
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+	strcat(resultat, formatageNb(msg.id));
+
+	return resultat;
+}
+
+char *writeLISTmsgServeur(message msg){
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
+	msg.type = "LIST";
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+	strcat(resultat, formatageNb(msg.nombre));
+	strcat(resultat, getStringLength(msg.pseudo));
+	strcat(resultat, msg.pseudo);
+
+	return resultat;
+}
+
 /************************
  *	DEBUT PARTIE    *
  * 			*
@@ -216,7 +239,10 @@ void deformatage(char* s, int opt){
 		;
 		//TO DO
 	else if(strcmp(substr, "LIST") == 0)
-		;
+		if(opt == 0)
+			liste(s);
+		else
+			listeClient(s);
 		//TO DO
 	else if(strcmp(substr, "SHUT") == 0)
 		;
@@ -369,6 +395,45 @@ void bcstClient(char *s){
 	printf("[%s] %s\n", pseudo, substr);
 }
 
+void liste(char *s){
+	int fd;
+	message msg = initialiseMessage();
+	char *msgReady = malloc(MAX_BUF*sizeof(char));
+	char *currentClient = malloc(4*sizeof(char));
+	char *id = extractId(s);
+	int i = 0;
+
+	msg.nombre = INDICECREATION;
+
+	//On envoie autant de messages que nécessaire
+	while(i < INDICECREATION){
+		currentClient = PSEUDOS[i];
+		msg.pseudo = currentClient;
+		msgReady = writeLISTmsgServeur(msg);
+
+		if((fd = open(id, O_WRONLY)) == -1){
+			perror("openLIST");
+			exit(1);
+		}
+	
+		if((write(fd, msgReady, MAX_BUF)) == -1){
+			perror("writeLIST");
+			exit(1);
+		}
+	
+		close(fd);
+		i++;
+	}
+}
+
+void listeClient(char *s){
+	char *debut = &s[16];
+	char *fin = &s[strlen(s)];
+	char *pseudo = calloc(1, fin - debut + 1);
+	memcpy(pseudo, debut, fin - debut);
+	printf("{%s}\n", pseudo);
+}
+
 void byee(char *s){
 	char *id = extractId(s);
 	int i = 0, fd, positionPseudo = 0;
@@ -378,7 +443,7 @@ void byee(char *s){
 	memcpy(idsTemp, IDSCLIENTS, 1024*sizeof(int));
 	memcpy(pseudosTemp, PSEUDOS, 1024*sizeof(char));
 
-	while(i <= INDICECREATION){
+	while(i < INDICECREATION){
 		if(strcmp(id, formatageNb(IDSCLIENTS[i])) == 0){
 			positionPseudo = i;
 			currentClient = formatageNb(IDSCLIENTS[i]);
@@ -435,7 +500,7 @@ char *extractId(char *s){
 		fin = &s[strlen(s)];
 		substr = calloc(1, fin - debut + 1);
 		memcpy(substr, debut, fin - debut);
-	} else if((strcmp(extractType(s), "BCST") == 0) || (strcmp(extractType(s), "BYEE") == 0)){
+	} else if((strcmp(extractType(s), "BCST") == 0) || (strcmp(extractType(s), "BYEE") == 0) || (strcmp(extractType(s), "LIST") == 0)){
 		debut = &s[8];
 		fin = &s[12];
 		substr = calloc(1, fin - debut + 1);

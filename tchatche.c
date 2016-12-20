@@ -99,7 +99,14 @@ int main()
 				}
 				sleep(0.5);
 				break;
-				
+			} else if(strcmp(msg.msg, "/list\n") == 0) {
+				chaineFinale = writeLISTmsgClient(msg);
+				msg.tube = pid;
+				msg.id = pid;
+				if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
+					perror("write");
+					exit(1);
+				}
 			} else {
 				strtok(msg.msg, "\n");
 				msg.tube = pid;

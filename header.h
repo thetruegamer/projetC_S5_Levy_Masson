@@ -19,6 +19,7 @@ typedef struct {
 	int tube;
 	int lMsg;
 	char *msg;
+	int nombre; //nombre servant normalement au message LIST
 } message;
 
 int getPPID();
@@ -36,6 +37,8 @@ char *writeOKOKmsg(message msg);
 char *writeBCSTmsgClient(message msg);
 char *writeBCSTmsgServeur(message msg);
 char *writeBYEEmsg(message msg);
+char *writeLISTmsgClient(message msg);
+char *writeLISTmsgServeur(message msg);
 
 void deformatage(char* s, int opt);
 
@@ -50,6 +53,9 @@ void bcstClient(char *s);
 
 void byee(char *s);
 void byeeClient(char *s);
+
+void liste(char *s);
+void listeClient(char *s);
 
 char *extractId(char *s);
 char *extractPseudo(char *s);
