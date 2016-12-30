@@ -41,6 +41,8 @@ char *writeLISTmsgClient(message msg);
 char *writeLISTmsgServeur(message msg);
 char *writePRVTmsgClient(message msg);
 char *writePRVTmsgServeur(message msg);
+char *writeSHUTmsgClient(message msg);
+char *writeSHUTmsgServeur(message msg);
 
 void deformatage(char* s, int opt);
 
@@ -61,6 +63,9 @@ void byeeClient(char *s);
 
 void liste(char *s);
 void listeClient(char *s);
+
+void shut(char *s);
+void shutClient(char *s);
 
 char *extractId(char *s);
 char *extractPseudo(char *s);

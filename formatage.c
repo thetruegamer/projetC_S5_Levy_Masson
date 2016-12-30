@@ -231,6 +231,23 @@ char *writePRVTmsgServeur(message msg){
 	return resultat;
 }
 
+char *writeSHUTmsgServeur(message msg){
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
+	msg.type = "SHUT";
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+	strcat(resultat, getStringLength(msg.pseudo));
+	strcat(resultat, msg.pseudo);
+}
+
+char *writeSHUTmsgClient(message msg){
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
+	msg.type = "SHUT";
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+	strcat(resultat, formatageNb(msg.id));
+}
+
 /************************
  *	DEBUT PARTIE    *
  * 			*
@@ -274,8 +291,10 @@ void deformatage(char* s, int opt){
 			listeClient(s);
 		//TO DO
 	else if(strcmp(substr, "SHUT") == 0)
-		;
-		//TO DO
+		if(opt == 0)
+			shut(s);
+		else
+			shutClient(s);
 	else if(strcmp(substr, "DEBG") == 0)
 		;
 		//TO DO?
@@ -333,6 +352,7 @@ void heloServeur(char *s){
 }
 
 void okok(char *s){
+	//printf("s okok : %s\n", s);
 	int fd;
 	char *substr = extractId(s);
 
@@ -348,8 +368,8 @@ void okok(char *s){
 }
 
 void okokClient(char *s) {
-	char *substr = extractId(s);
-	printf("[SERVEUR] Connected. Your session ID is : %s\n", substr);
+	//char *substr = extractId(s);
+	printf("[SERVER] ~SUCCESS~\n");
 }
 
 void bcst(char *s){
@@ -502,7 +522,7 @@ void byee(char *s){
 
 void byeeClient(char *s){
 	char *id = extractId(s);
-	printf("[SERVER] You are now disconnected. Your ID was : %s\n", id);
+	printf("[SERVER] You are now disconnected.\n");
 	//exit(0);
 }
 
@@ -562,6 +582,10 @@ void prvt(char *s){
 		exit(1);
 	}
 	
+	msg.id = atoi(id);
+	char *okokString = writeOKOKmsg(msg);
+	okok(okokString);
+
 	close(fd);
 		
 	//Extraire message, redistribuer message
@@ -588,6 +612,40 @@ void prvtClient(char *s){
 	memcpy(substr, debut, fin - debut);
 
 	printf("[private > %s] %s\n", pseudo, substr);
+}
+
+void shut(char *s){
+	message msg;
+	msg = initialiseMessage();
+	int fd, i = 0;
+	char *currentClient = malloc(MAX_BUF*sizeof(char));
+	char *chaineFinale = malloc(MAX_BUF*sizeof(char));
+	
+	while(i < INDICECREATION){
+		sprintf(currentClient, "%d", IDSCLIENTS[i]);
+		strcpy(msg.pseudo, currentClient);
+
+		chaineFinale = writeSHUTmsgServeur(msg);
+
+		if((fd = open(currentClient, O_WRONLY)) == -1){
+			perror("openSHUT");
+			exit(1);
+		}
+		
+		if((write(fd, chaineFinale, MAX_BUF)) == -1){
+			perror("writeSHUT");
+			exit(1);
+		}
+		i++;
+	}
+	printf("MESSAGES SENT. SHUTING DOWN NOW~\n");
+	sleep(0.5);
+	exit(0);
+}
+
+void shutClient(char *s){
+	printf("[SERVER] ~!~ SHUTING DOWN ~!~ \n");
+	exit(0);
 }
 
 /////////////////////////////////////

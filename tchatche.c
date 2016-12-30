@@ -107,6 +107,14 @@ int main()
 					perror("write");
 					exit(1);
 				}
+			} else if(strcmp(msg.msg, "/shut\n") == 0) {
+				chaineFinale = writeSHUTmsgClient(msg);
+				msg.tube = pid;
+				msg.id = pid;
+				if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
+					perror("write");
+					exit(1);
+				}
 			} else {
 				msg.tube = pid;
 				msg.id = pid;
