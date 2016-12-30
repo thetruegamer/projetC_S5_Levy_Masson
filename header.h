@@ -39,6 +39,8 @@ char *writeBCSTmsgServeur(message msg);
 char *writeBYEEmsg(message msg);
 char *writeLISTmsgClient(message msg);
 char *writeLISTmsgServeur(message msg);
+char *writePRVTmsgClient(message msg);
+char *writePRVTmsgServeur(message msg);
 
 void deformatage(char* s, int opt);
 
@@ -50,6 +52,9 @@ void okokClient(char *s);
 
 void bcst(char *s);
 void bcstClient(char *s);
+
+void prvt(char *s);
+void prvtClient(char *s);
 
 void byee(char *s);
 void byeeClient(char *s);

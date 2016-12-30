@@ -204,6 +204,33 @@ char *writeLISTmsgServeur(message msg){
 	return resultat;
 }
 
+char *writePRVTmsgClient(message msg){
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
+	msg.type = "PRVT";
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+	strcat(resultat, formatageNb(msg.id));
+	strcat(resultat, getStringLength(msg.pseudo));
+	strcat(resultat, msg.pseudo);
+	strcat(resultat, getStringLength(msg.msg));
+	strcat(resultat, msg.msg);
+
+	return resultat;
+}
+
+char *writePRVTmsgServeur(message msg){
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
+	msg.type = "PRVT";
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+	strcat(resultat, getStringLength(msg.pseudo));
+	strcat(resultat, msg.pseudo);
+	strcat(resultat, getStringLength(msg.msg));
+	strcat(resultat, msg.msg);
+
+	return resultat;
+}
+
 /************************
  *	DEBUT PARTIE    *
  * 			*
@@ -236,8 +263,10 @@ void deformatage(char* s, int opt){
 		else
 			bcstClient(s);
 	else if(strcmp(substr, "PRVT") == 0)
-		;
-		//TO DO
+		if(opt == 0)
+			prvt(s);
+		else
+			prvtClient(s);
 	else if(strcmp(substr, "LIST") == 0)
 		if(opt == 0)
 			liste(s);
@@ -473,8 +502,87 @@ void byee(char *s){
 
 void byeeClient(char *s){
 	char *id = extractId(s);
-	printf("[SERVEUR] You are now disconnected. Your ID was : %s\n", id);
+	printf("[SERVER] You are now disconnected. Your ID was : %s\n", id);
 	//exit(0);
+}
+
+void prvt(char *s){
+	int fd;
+	message msg = initialiseMessage();
+	char *msgReady = malloc(MAX_BUF*sizeof(char));
+	char *currentClient = malloc(4*sizeof(char));
+	char *id = extractId(s);
+	int i = 0, positionPseudo = 0;
+
+	//on récupère la longueur du pseudo dans le message
+	char *debut = &s[12];
+	char *fin = &s[16];
+	char *lPseudo = calloc(1, fin - debut + 1);
+	memcpy(lPseudo, debut, fin - debut);
+	int j = atoi(lPseudo);
+
+	//On récupère le message
+	debut = &s[20 + j];
+	fin = &s[strlen(s)];
+	char *substr = calloc(1, fin - debut + 1);
+	memcpy(substr, debut, fin - debut);
+
+	//On récupère le pseudo de l'envoyeur
+	while(i < INDICECREATION){
+		if(strcmp(id, formatageNb(IDSCLIENTS[i])) == 0){
+			positionPseudo = i;
+		}
+		i++;
+	}
+	char *pseudo = PSEUDOS[positionPseudo];
+
+	//On formate le message a envoyer aux clients
+	msg.msg = substr;
+	msg.pseudo = pseudo;
+	msgReady = writePRVTmsgServeur(msg);
+
+	i = 0;
+	while(i < INDICECREATION){
+		currentClient = formatageNb(IDSCLIENTS[i]);
+		
+		if(strcmp(currentClient, id) != 0){
+			if((fd = open(currentClient, O_WRONLY)) == -1){
+				perror("openBCST");
+				exit(1);
+			}
+	
+			if((write(fd, msgReady, MAX_BUF)) == -1){
+				perror("writeBCST");
+				exit(1);
+			}
+		}
+		close(fd);
+		i++;
+	}
+	//Extraire message, redistribuer message
+}
+
+void prvtClient(char *s){
+	//récupère la taille du pseudo
+	char *debut = &s[8];
+	char *fin = &s[12];
+	char *indice = calloc(1, fin - debut + 1);
+	memcpy(indice, debut, fin - debut);
+	int i = atoi(indice);
+	
+	//récupère le pseudo
+	debut = &s[12];
+	fin = &s[12 + i];
+	char *pseudo = calloc(1, fin - debut + 1);
+	memcpy(pseudo, debut, fin - debut);
+	
+	//récupère le message
+	debut = &s[16 + i];
+	fin = &s[strlen(s)];
+	char *substr = calloc(1, fin - debut + 1);
+	memcpy(substr, debut, fin - debut);
+
+	printf("[private > %s] %s\n", pseudo, substr);
 }
 
 /////////////////////////////////////
@@ -500,7 +608,7 @@ char *extractId(char *s){
 		fin = &s[strlen(s)];
 		substr = calloc(1, fin - debut + 1);
 		memcpy(substr, debut, fin - debut);
-	} else if((strcmp(extractType(s), "BCST") == 0) || (strcmp(extractType(s), "BYEE") == 0) || (strcmp(extractType(s), "LIST") == 0)){
+	} else if((strcmp(extractType(s), "BCST") == 0) || (strcmp(extractType(s), "BYEE") == 0) || (strcmp(extractType(s), "LIST") == 0) || (strcmp(extractType(s), "PRVT") == 0)){
 		debut = &s[8];
 		fin = &s[12];
 		substr = calloc(1, fin - debut + 1);

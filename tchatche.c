@@ -108,14 +108,30 @@ int main()
 					exit(1);
 				}
 			} else {
-				strtok(msg.msg, "\n");
 				msg.tube = pid;
 				msg.id = pid;
-				chaineFinale = writeBCSTmsgClient(msg);
-				// on écrit dans le tube
-				if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
-					perror("write");
-					exit(1);
+				char *bcst = malloc(1024*sizeof(char));
+				strcpy(bcst, msg.msg);
+				char *prive = strtok(bcst, " ");
+				if(strcmp(prive, "/p") == 0){
+					msg.pseudo = strtok(NULL, " ");
+					msg.msg = strtok(NULL, "\n");
+					strtok(msg.msg, "\n");
+
+					chaineFinale = writePRVTmsgClient(msg);
+					// on écrit dans le tube
+					if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
+						perror("write");
+						exit(1);
+					}
+				} else {
+					strtok(msg.msg, "\n");
+					chaineFinale = writeBCSTmsgClient(msg);
+					// on écrit dans le tube
+					if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
+						perror("write");
+						exit(1);
+					}
 				}
 			}
 		}
