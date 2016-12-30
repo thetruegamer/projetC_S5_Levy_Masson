@@ -638,6 +638,7 @@ void shut(char *s){
 		}
 		i++;
 	}
+	close(fd);
 	printf("MESSAGES SENT. SHUTING DOWN NOW~\n");
 	sleep(0.5);
 	exit(0);
