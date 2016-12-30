@@ -512,7 +512,8 @@ void prvt(char *s){
 	char *msgReady = malloc(MAX_BUF*sizeof(char));
 	char *currentClient = malloc(4*sizeof(char));
 	char *id = extractId(s);
-	int i = 0, positionPseudo = 0;
+	char *idDest = malloc(4*sizeof(char));
+	int i = 0, positionPseudo = 0, positionId = 0;
 
 	//on récupère la longueur du pseudo dans le message
 	char *debut = &s[12];
@@ -527,38 +528,42 @@ void prvt(char *s){
 	char *substr = calloc(1, fin - debut + 1);
 	memcpy(substr, debut, fin - debut);
 
-	//On récupère le pseudo de l'envoyeur
+	//On récupère le pseudo du destinataire
+	debut = &s[16];
+	fin = &s[16 + j];
+	char *pseudoDestinataire = calloc(1, fin - debut + 1);
+	memcpy(pseudoDestinataire, debut, fin - debut);
+
+	//On récupère le pseudo de l'envoyeur et l'id du destinataire
 	while(i < INDICECREATION){
 		if(strcmp(id, formatageNb(IDSCLIENTS[i])) == 0){
 			positionPseudo = i;
 		}
+		if(strcmp(PSEUDOS[i], pseudoDestinataire) == 0){
+			positionId = i;
+		}
 		i++;
 	}
 	char *pseudo = PSEUDOS[positionPseudo];
+	idDest = formatageNb(IDSCLIENTS[positionId]);
 
 	//On formate le message a envoyer aux clients
 	msg.msg = substr;
 	msg.pseudo = pseudo;
 	msgReady = writePRVTmsgServeur(msg);
-
-	i = 0;
-	while(i < INDICECREATION){
-		currentClient = formatageNb(IDSCLIENTS[i]);
-		
-		if(strcmp(currentClient, id) != 0){
-			if((fd = open(currentClient, O_WRONLY)) == -1){
-				perror("openBCST");
-				exit(1);
-			}
 	
-			if((write(fd, msgReady, MAX_BUF)) == -1){
-				perror("writeBCST");
-				exit(1);
-			}
-		}
-		close(fd);
-		i++;
+	if((fd = open(idDest, O_WRONLY)) == -1){
+		perror("openPRVT");
+		exit(1);
 	}
+	
+	if((write(fd, msgReady, MAX_BUF)) == -1){
+		perror("writePRVT");
+		exit(1);
+	}
+	
+	close(fd);
+		
 	//Extraire message, redistribuer message
 }
 
