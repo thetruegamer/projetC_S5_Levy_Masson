@@ -63,14 +63,15 @@ int main()
 	printf("Welcome to the MALE chat!\n");
 	printf("Enter your name for this session > ");
 
-	//On va remplir la struct msg pour l'envoi du pseudo
-	fgets(msg.pseudo, MAX_BUF, stdin);
-	strtok(msg.pseudo, "\n");
-
 	pid = getPPID();
-	msg.type = "HELO";
 	msg.tube = pid;
 	msg.id = pid;
+
+	fgets(msg.pseudo, MAX_BUF, stdin);
+	
+	strtok(msg.pseudo, "\n");
+
+	msg.type = "HELO";
 
 	//On rédige un message de type HELO
 	chaineFinale = writeHELOmsg(msg);
@@ -97,27 +98,19 @@ int main()
 					perror("write");
 					exit(1);
 				}
-				sleep(0.5);
-				break;
 			} else if(strcmp(msg.msg, "/list\n") == 0) {
 				chaineFinale = writeLISTmsgClient(msg);
-				msg.tube = pid;
-				msg.id = pid;
 				if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
 					perror("write");
 					exit(1);
 				}
 			} else if(strcmp(msg.msg, "/shut\n") == 0) {
 				chaineFinale = writeSHUTmsgClient(msg);
-				msg.tube = pid;
-				msg.id = pid;
 				if((write(fd, chaineFinale, strlen(chaineFinale)) == -1)){
 					perror("write");
 					exit(1);
 				}
 			} else {
-				msg.tube = pid;
-				msg.id = pid;
 				char *bcst = malloc(1024*sizeof(char));
 				strcpy(bcst, msg.msg);
 				char *prive = strtok(bcst, " ");

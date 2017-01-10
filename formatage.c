@@ -248,6 +248,13 @@ char *writeSHUTmsgClient(message msg){
 	strcat(resultat, formatageNb(msg.id));
 }
 
+char *writeBADDmsg(message msg){
+	char *resultat = malloc(getTotalLength(msg)*sizeof(char));
+	msg.type = "BADD";
+	strcat(resultat, formatageNb(getTotalLength(msg)));
+	strcat(resultat, msg.type);
+}
+
 /************************
  *	DEBUT PARTIE    *
  * 			*
@@ -302,48 +309,76 @@ void deformatage(char* s, int opt){
 		;
 		//TO DO
 	else if(strcmp(substr, "BADD") == 0)
-		;
-		//TO DO
+		badd(s);
+}
+
+void badd(){
+	printf("[SERVER] AN ERROR HAS OCCURED\n");
 }
 
 void helo(char *s){
 	int fd;
 	char *messageBienvenue = malloc(MAX_BUF*sizeof(char));
-	message msg;
+	message msg, msgByee, badd;
 	msg = initialiseMessage();
+	badd = initialiseMessage();
+	msgByee = initialiseMessage();
 	char *okokString = malloc(MAX_BUF*sizeof(char));
+	char *baddString = malloc(MAX_BUF*sizeof(char));
+	char *byeeString = malloc(MAX_BUF*sizeof(char));
 	char *buf = malloc(MAX_BUF*sizeof(char));
-	char *substr = extractId(s);
+	char *id = extractId(s);
+	int i = 0, flagPseudo = 0;
 	
-	msg.tube = atoi(substr);
-	msg.id = atoi(substr);
+	msg.tube = atoi(id);
+	msg.id = atoi(id);
 
-	if((access(substr, F_OK) == -1)){
-		if((mkfifo(substr, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH)) == -1){
+	if((access(id, F_OK) == -1)){
+		if((mkfifo(id, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH)) == -1){
 			perror("mkfifoHELO");
 			exit(1);
 		}
 	}
 
-	IDSCLIENTS[INDICECREATION] = atoi(substr);
-
-	if((fd = open(substr, O_WRONLY)) == -1){
+	if((fd = open(id, O_WRONLY)) == -1){
 		perror("openHELO");
 		exit(1);
 	}
-
+	
 	//pseudo
 	char *debut = &s[12];
 	char *fin = &s[strlen(s) - 8];
-	substr = calloc(1, fin - debut + 1);
+	char *substr = calloc(1, fin - debut + 1);
 	memcpy(substr, debut, fin - debut);
 
-	PSEUDOS[INDICECREATION] = substr;
-	INDICECREATION++;
+	//vérifie que le pseudo n'est pas déjà pris
+	while(i < INDICECREATION){
+		if(strcmp(PSEUDOS[i], substr) == 0){
+			flagPseudo = 1;
+			baddString = writeBADDmsg(badd);
+			if((write(fd, baddString, MAX_BUF)) == -1){
+				perror("write");
+				exit(1);
+			}
+			byeeString = writeBYEEmsg(msgByee);
+			if((write(fd, byeeString, MAX_BUF)) == -1){
+				perror("write");
+				exit(1);
+			}
+		}
+		i++;
+	}
 
-	msg.pseudo = substr;
-	okokString = writeOKOKmsg(msg);
-	okok(okokString);
+	if(flagPseudo == 0){
+		IDSCLIENTS[INDICECREATION] = atoi(id);
+
+		PSEUDOS[INDICECREATION] = substr;
+		INDICECREATION++;
+
+		msg.pseudo = substr;
+		okokString = writeOKOKmsg(msg);
+		okok(okokString);
+	}
 }
 
 void heloServeur(char *s){
@@ -523,17 +558,18 @@ void byee(char *s){
 void byeeClient(char *s){
 	char *id = extractId(s);
 	printf("[SERVER] You are now disconnected.\n");
-	//exit(0);
+	exit(0);
 }
 
 void prvt(char *s){
 	int fd;
-	message msg = initialiseMessage();
+	message msg = initialiseMessage(), badd = initialiseMessage();
 	char *msgReady = malloc(MAX_BUF*sizeof(char));
+	char *msgBadd = malloc(MAX_BUF*sizeof(char));
 	char *currentClient = malloc(4*sizeof(char));
 	char *id = extractId(s);
 	char *idDest = malloc(4*sizeof(char));
-	int i = 0, positionPseudo = 0, positionId = 0;
+	int i = 0, positionPseudo = 0, positionId = 0, flagPseudo = 0;
 
 	//on récupère la longueur du pseudo dans le message
 	char *debut = &s[12];
@@ -561,34 +597,47 @@ void prvt(char *s){
 		}
 		if(strcmp(PSEUDOS[i], pseudoDestinataire) == 0){
 			positionId = i;
+			flagPseudo = 1;
 		}
 		i++;
 	}
-	char *pseudo = PSEUDOS[positionPseudo];
-	idDest = formatageNb(IDSCLIENTS[positionId]);
 
-	//On formate le message a envoyer aux clients
-	msg.msg = substr;
-	msg.pseudo = pseudo;
-	msgReady = writePRVTmsgServeur(msg);
-	
-	if((fd = open(idDest, O_WRONLY)) == -1){
-		perror("openPRVT");
-		exit(1);
-	}
-	
-	if((write(fd, msgReady, MAX_BUF)) == -1){
-		perror("writePRVT");
-		exit(1);
-	}
-	
-	msg.id = atoi(id);
-	char *okokString = writeOKOKmsg(msg);
-	okok(okokString);
+	//si on a pas trouvé le pseudo du destinataire
+	if(flagPseudo == 0){
+		msgBadd = writeBADDmsg(badd);
+		if((fd = open(id, O_WRONLY)) == -1){
+			perror("openBADDPRVT");
+			exit(1);
+		}
+		if((write(fd, msgBadd, MAX_BUF)) == -1){
+			perror("writeBADDPRVT");
+			exit(1);
+		}
+	} else {
+		char *pseudo = PSEUDOS[positionPseudo];
+		idDest = formatageNb(IDSCLIENTS[positionId]);
 
-	close(fd);
+		//On formate le message a envoyer aux clients
+		msg.msg = substr;
+		msg.pseudo = pseudo;
+		msgReady = writePRVTmsgServeur(msg);
 		
-	//Extraire message, redistribuer message
+		if((fd = open(idDest, O_WRONLY)) == -1){
+			perror("openPRVT");
+			exit(1);
+		}
+		
+		if((write(fd, msgReady, MAX_BUF)) == -1){
+			perror("writePRVT");
+			exit(1);
+		}
+		
+		msg.id = atoi(id);
+		char *okokString = writeOKOKmsg(msg);
+		okok(okokString);
+
+		close(fd);
+	}
 }
 
 void prvtClient(char *s){

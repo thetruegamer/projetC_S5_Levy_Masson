@@ -43,8 +43,11 @@ char *writePRVTmsgClient(message msg);
 char *writePRVTmsgServeur(message msg);
 char *writeSHUTmsgClient(message msg);
 char *writeSHUTmsgServeur(message msg);
+char *writeBADDmsg(message msg);
 
 void deformatage(char* s, int opt);
+
+void badd();
 
 void helo(char *s);
 void heloServeur(char *s);
