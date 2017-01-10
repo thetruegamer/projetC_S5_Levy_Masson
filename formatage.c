@@ -334,10 +334,7 @@ void helo(char *s){
 	msg.id = atoi(id);
 
 	if((access(id, F_OK) == -1)){
-		if((mkfifo(id, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH)) == -1){
-			perror("mkfifoHELO");
-			exit(1);
-		}
+		mkfifo(id, S_IWUSR | S_IRUSR | S_IRGRP | S_IROTH);
 	}
 
 	if((fd = open(id, O_WRONLY)) == -1){
@@ -738,33 +735,3 @@ char *extractType(char *s){
 
 	return substr;
 }
-
-// int main()
-// {
-// 	//char *test = malloc(4*sizeof(char));
-	
-// 	// TEST FORMATAGE NOMBRE
-// 	// test = formatageNb(690);
-// 	// printf("test : %s\n", test);
-
-// 	//TEST GET STRING LENGTH
-// 	// test = "test";
-// 	// test = getStringLength(test);
-// 	// printf("test : %s\n", test);
-
-// 	//TEST CREATION / INITIALISATION STRUCT
-// 	message msg;
-// 	msg = initialiseMessage();
-// 	msg.pseudo = "picsouze";
-// 	msg.type = "HELO";
-// 	msg.longueurTotale = getTotalLength(msg);
-// 	afficheInfosStruct(msg);
-// 	char *helo = writeHELOmsg(msg);
-// 	msg.type = "okok";
-// 	char *okok = writeOKOKmsg(msg);
-// 	printf("%s\n", helo);
-// 	printf("%s\n", okok);
-// 	deformatage(helo);
-
-// 	return 0;
-// }
